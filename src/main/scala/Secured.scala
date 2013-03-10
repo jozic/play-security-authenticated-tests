@@ -11,13 +11,15 @@ trait Secured {
 
   val logger = Logger("secured")
 
-  def fail(reason: String) = {
+  final def fail(reason: String) = {
     logger.debug("Access attempt failed: " + reason)
     Unauthorized("must be authenticated")
   }
 
   final def secured[A](action: Action[A]) =
-    Security.Authenticated(req => req.headers.get("authTicket"), _ => fail("no ticket found")) {
+    Security.Authenticated(
+      req => req.headers.get("authTicket"), 
+      _ => fail("no ticket found")) {
       ticket => Action(action.parser) {
         request => withTicket(ticket) {
           action(request)
